@@ -11,3 +11,8 @@ export class mk64mp_PlayerPacket extends Packet {
         this.players = mk64Player;
     }
 }
+
+export class ConnectedPlayers {
+    networkPlayerInstances: any = {};
+    players: any = {};
+}
