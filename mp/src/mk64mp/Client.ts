@@ -1,11 +1,19 @@
 import { InjectCore } from "modloader64_api/CoreInjection"
 import { IPlugin, IModLoaderAPI } from "modloader64_api/IModLoaderAPI";
+import { ModLoaderAPIInject } from "modloader64_api/ModLoaderAPIInjector";
 import { EventHandler, PrivateEventHandler, EventsClient, bus } from "modloader64_api/EventHandler";
 import { LobbyData, NetworkHandler } from "modloader64_api/NetworkHandler";
-import { MK64Core, mk64Events, Player } from "./MK64CORE"
+import { helperFuncs, MK64Core, mk64Events, mk64Player } from "./MK64CORE"
 import { ParentReference, SidedProxy, ProxySide } from "modloader64_api/SidedProxy/SidedProxy";
+import { mk64mp_PlayerPacket } from "./Packets";
+import { onViUpdate } from "modloader64_api/PluginLifecycle";
     
-export class mk64Client {
+export class mk64mpClient {
+
+    private localPlayer = new mk64Player();
+    private pointerTable: Array<number> = [];
+    private helperFunc = new helperFuncs();
+
     @InjectCore()
     core!: MK64Core;
 
@@ -14,6 +22,38 @@ export class mk64Client {
 
     @ParentReference()
     parent!: IPlugin;
+    //constructor(private helperFunc: helperFuncs) { }
+
+    postinit(): void {
+        setTimeout(() => {
+            this.pointerTable = this.helperFunc.getPointerTable(this.pointerTable)
+            if (this.pointerTable.length === 0) {return;}
+                setInterval(() => {
+                    this.localPlayer.posX = this.ModLoader.emulator.rdramRead32(this.pointerTable[0] + 0x14);
+                    this.localPlayer.posY = this.ModLoader.emulator.rdramRead32(this.pointerTable[0] + 0x18);
+                    this.localPlayer.posZ = this.ModLoader.emulator.rdramRead32(this.pointerTable[0] + 0x1C);
+                    this.localPlayer.rotX = this.ModLoader.emulator.rdramRead32(this.pointerTable[0] + 0x20);
+                    this.localPlayer.rotY = this.ModLoader.emulator.rdramRead32(this.pointerTable[0] + 0x24);
+                    this.localPlayer.rotZ = this.ModLoader.emulator.rdramRead32(this.pointerTable[0] + 0x28);
+                    //this.ModLoader.logger.info(this.localPlayer.posX.toString(16)+" | "+Player1.posY.toString(16)+" | "+Player1.posZ.toString(16));
+                    
+                }, 100);
+            
+        }, 1000);
+    }
+
+    @onViUpdate()
+    onViUpdate() {
+        //if (frame == 10) {
+            this.ModLoader.clientSide.sendPacket(
+                new mk64mp_PlayerPacket(
+                    this.ModLoader.clientLobby, 
+                    this.localPlayer,
+                    
+                )
+            );
+        //}
+    }
 
     //LobbyConfig: mk64mpLobbyConfig = {} as mk64mpLobbyConfig;
     //config!: mk64mpConfigCategory;
@@ -41,12 +81,12 @@ export class mk64Client {
         }
     }
     @EventHandler(mk64Events.ON_PLAYER_UPDATE)
-    onPlayerUpdate(players: mk64Player) {
+    onPlayerUpdate(localPlayer: mk64Player) {
         this.ModLoader.clientSide.sendPacket(
-            new Z64O_ScenePacket(
-                this.ModLoader.clientLobby,
-                this.core.OOT!.global.scene,
-                age
+            new mk64mp_PlayerPacket(
+                this.ModLoader.clientLobby, 
+                localPlayer = this.localPlayer,
+                
             )
         );
     }
