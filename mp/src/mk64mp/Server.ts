@@ -4,7 +4,7 @@ import { ModLoaderAPIInject } from "modloader64_api/ModLoaderAPIInjector";
 import { MK64Core, mk64Events, mk64Player } from "./MK64CORE";
 import { ParentReference, SidedProxy, ProxySide } from "modloader64_api/SidedProxy/SidedProxy";
 import { EventHandler, EventServerJoined, EventServerLeft, EventsServer } from "modloader64_api/EventHandler";
-import { mk64mp_PlayerPacket } from "./Packets";
+import { mk64mp_PlayerPacket, packet_LobbyFull, packet_PlayerRecord } from "./Packets";
 import { ServerNetworkHandler } from "modloader64_api/NetworkHandler";
 
 export class mk64mpServer {
@@ -17,11 +17,14 @@ export class mk64mpServer {
     //@SidedProxy(ProxySide.SERVER, OotOnline_ServerModules)
    // modules!: OotOnline_ServerModules;
 
-    private players = [];
+    private players: Record<string, number> = {};
+    private playerCount = 0;
+    private openSlots: number[] = [];
 
     setup(): void {
         
     }
+    
 
    @EventHandler(EventsServer.ON_LOBBY_CREATE)
    onLobbyCreated(lobby: string) {
@@ -42,12 +45,23 @@ export class mk64mpServer {
    }
    @EventHandler(EventsServer.ON_LOBBY_JOIN)
    onPlayerJoin_server(evt: EventServerJoined) {
-    this.ModLoader.logger.info("PLAYER JOINED!!");
-    if (this.players.length >= 8) {
-        // DC 9th player.
+    this.ModLoader.logger.info("Server: PLAYER JOINED!!");
+
+    if (Object.keys(this.players).length >= 8) {
+        this.ModLoader.serverSide.sendPacketToSpecificPlayer(
+        new packet_LobbyFull(evt.lobby), evt.player);
         return;
     }
-    this.players[evt.player.uuid];
+    if (this.openSlots.length === 0) {
+        this.players[evt.player.uuid] = this.playerCount++;
+    } else {
+        this.players[evt.player.uuid] = this.openSlots[0];
+        this.openSlots.splice(0, 1);
+        this.playerCount++;
+    }
+    this.ModLoader.serverSide.sendPacket(
+        new packet_PlayerRecord(evt.lobby, this.players)
+        );
        //let storage: OotOnlineStorage = this.ModLoader.lobbyManager.getLobbyStorage(
       //     evt.lobby,
       //     this.parent
@@ -60,6 +74,12 @@ export class mk64mpServer {
    }
    @EventHandler(EventsServer.ON_LOBBY_LEAVE)
    onPlayerLeft_server(evt: EventServerLeft) {
+       if (this.players[evt.player.uuid]) {
+           this.openSlots.push(this.players[evt.player.uuid]);
+           delete this.players[evt.player.uuid];
+           this.playerCount--;
+       }
+
        //let storage: OotOnlineStorage = this.ModLoader.lobbyManager.getLobbyStorage(
        //    evt.lobby,
         //   this.parent
@@ -71,10 +91,17 @@ export class mk64mpServer {
        //delete storage.players[evt.player.uuid];
        //delete storage.networkPlayerInstances[evt.player.uuid];
    }
-   @ServerNetworkHandler(mk64Events.ON_PLAYER_UPDATE)
-    onPlayerUpdate(packet: mk64mp_PlayerPacket) {
-        this.ModLoader.logger.info("Server: packet received");
-        this.ModLoader.logger.info(packet.localPlayer.posX.toString(16));
+  // @ServerNetworkHandler(mk64Events.ON_PLAYER_UPDATE)
+   // onPlayerUpdate(packet: mk64mp_PlayerPacket) {
+     //   this.ModLoader.logger.info(packet.localPlayer.posX.toString(16)+
+     //                           " | "+packet.localPlayer.posY.toString(16)+" | "+
+     //                           packet.localPlayer.posZ.toString(16));
+    //}
+
+    @ServerNetworkHandler(mk64Events.ON_GET_PLAYER_INDEX)
+    onGetPlayerIndex(packet: packet_GetPlayerIndex) {
+        this.players[packet.uuid];
+
     }
 
    //@ServerNetworkHandler('Z64O_DownloadRequestPacket')
