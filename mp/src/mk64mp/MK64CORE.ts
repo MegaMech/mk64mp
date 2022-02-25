@@ -22,6 +22,8 @@ export class MK64Core implements ICore {
 
 export enum mk64Events {
     ON_PLAYER_UPDATE = "onPlayerUpdate",
+    ON_PLAYER_RECORD = "onPlayerRecord",
+    ON_LOBBY_FULL = "onLobbyFull",
 }
 
 export class mk64Player {
@@ -34,6 +36,7 @@ export class mk64Player {
 }
 
 export class helperFuncs {
+    @ModLoaderAPIInject()
     ModLoader!: IModLoaderAPI;
     public pointerTableAddress: number = 0x800DC4DC;
     //private pointerTable;
@@ -48,7 +51,7 @@ export class helperFuncs {
     public getPointerTable(pointerTable) {
         let offset = 0x0;
         let value;
-        this.ModLoader.logger.info(this.ModLoader.emulator.rdramRead32(0x800DC4DC).toString(16));
+        //this.ModLoader.logger.info(this.ModLoader.emulator.rdramRead32(0x800DC4DC).toString(16));
         do {
             value = this.ModLoader.emulator.rdramRead32(this.pointerTableAddress + offset)
             pointerTable.push(value);
