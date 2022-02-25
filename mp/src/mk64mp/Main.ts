@@ -6,11 +6,9 @@ import { ProxySide, SidedProxy } from 'modloader64_api/SidedProxy/SidedProxy';
 import path from 'path';
 import { mk64mpClient } from './Client';
 import { mk64mpServer } from './Server';
-import { Preinit } from "modloader64_api/PluginLifecycle";
+import { Init, Preinit } from "modloader64_api/PluginLifecycle";
 
 class mk64mp implements IPlugin {
-
-
     ModLoader!: IModLoaderAPI;
     pluginName?: "mk64mp";
     @InjectCore()
@@ -20,22 +18,17 @@ class mk64mp implements IPlugin {
     @SidedProxy(ProxySide.SERVER, mk64mpServer)
     server!: any;
 
-    //public pointerTableAddress: number = 0x800DC4DC;
-    //public pointerTable: Array<number> = [];
-    //public coords;
-    //public table_end = 0xB8000000
-    //public begin: boolean = false;
-    @Preinit()
+    //@Preinit()
     preinit(): void {
-        this.server.setup();
+        //this.server.setup();
     }
+    @Init()
     init(): void {
         this.ModLoader.logger.info("mk64mp initialized.");
-        this.server.ModLoader.logger.info("TIOEJIJOSGFJIOSDGIJOSDFOJIDFJIOSDFJIOSDFIOJSDFJIOSDFJIOSDFJIOSDFIO");
+        //this.server.ModLoader.logger.info("TIOEJIJOSGFJIOSDGIJOSDFOJIDFJIOSDFJIOSDFIOJSDFJIOSDFJIOSDFJIOSDFIO");
     }
     postinit(): void {
-        
-       
+        this.client.setup();
     }
     onTick(frame: number): void {
     }
