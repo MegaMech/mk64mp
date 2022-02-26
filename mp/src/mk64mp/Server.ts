@@ -2,6 +2,7 @@ import { InjectCore } from "modloader64_api/CoreInjection";
 import { IModLoaderAPI, IPlugin } from "modloader64_api/IModLoaderAPI";
 import { ModLoaderAPIInject } from "modloader64_api/ModLoaderAPIInjector";
 import { MK64Core, mk64Events, mk64Player } from "./MK64CORE";
+import PlayerData from "./MK64CORE";
 import { ParentReference, SidedProxy, ProxySide } from "modloader64_api/SidedProxy/SidedProxy";
 import { EventHandler, EventServerJoined, EventServerLeft, EventsServer } from "modloader64_api/EventHandler";
 import { mk64mp_PlayerPacket, packet_LobbyFull, packet_PlayerRecord } from "./Packets";
@@ -17,7 +18,7 @@ export class mk64mpServer {
     //@SidedProxy(ProxySide.SERVER, OotOnline_ServerModules)
    // modules!: OotOnline_ServerModules;
 
-    private players: Record<string, number> = {};
+    private players: Record<string, PlayerData> = {};
     private playerCount = 0;
     private openSlots: number[] = [];
 
@@ -53,9 +54,11 @@ export class mk64mpServer {
         return;
     }
     if (this.openSlots.length === 0) {
-        this.players[evt.player.uuid] = this.playerCount++;
+        //this.players[evt.player.uuid];
+        this.players[evt.player.uuid];
+        this.players[evt.player.uuid].index = this.playerCount++;
     } else {
-        this.players[evt.player.uuid] = this.openSlots[0];
+        this.players[evt.player.uuid].index = this.openSlots[0];
         this.openSlots.splice(0, 1);
         this.playerCount++;
     }
@@ -75,7 +78,7 @@ export class mk64mpServer {
    @EventHandler(EventsServer.ON_LOBBY_LEAVE)
    onPlayerLeft_server(evt: EventServerLeft) {
        if (this.players[evt.player.uuid]) {
-           this.openSlots.push(this.players[evt.player.uuid]);
+           this.openSlots.push(this.players[evt.player.uuid].index);
            delete this.players[evt.player.uuid];
            this.playerCount--;
        }
@@ -98,11 +101,7 @@ export class mk64mpServer {
      //                           packet.localPlayer.posZ.toString(16));
     //}
 
-    @ServerNetworkHandler(mk64Events.ON_GET_PLAYER_INDEX)
-    onGetPlayerIndex(packet: packet_GetPlayerIndex) {
-        this.players[packet.uuid];
-
-    }
+    
 
    //@ServerNetworkHandler('Z64O_DownloadRequestPacket')
     //onDownloadPacket_server(packet: Z64O_DownloadRequestPacket) {
