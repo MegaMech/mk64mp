@@ -24,6 +24,12 @@ export enum mk64Events {
     ON_PLAYER_UPDATE = "onPlayerUpdate",
     ON_PLAYER_RECORD = "onPlayerRecord",
     ON_LOBBY_FULL = "onLobbyFull",
+    ON_SELECTED_CHARACTER = "onSelectedCharacter",
+}
+
+export default interface PlayerData {
+    index: number;
+    characterTableIndex: number;
 }
 
 export class mk64Player {
@@ -33,6 +39,7 @@ export class mk64Player {
     rotX: number = 0;
     rotY: number = 0;
     rotZ: number = 0;
+    turn: number = 0;
 }
 
 export class helperFuncs {
