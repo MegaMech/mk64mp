@@ -1,7 +1,8 @@
 import {
     Packet
   } from 'modloader64_api/ModLoaderDefaultImpls';
-import {mk64Events, mk64Player} from "./MK64Core";
+import {mk64Events, mk64Player} from "./MK64CORE";
+import PlayerData from "./MK64CORE";
 
 
 
@@ -16,11 +17,20 @@ export class mk64mp_PlayerPacket extends Packet {
 }
 
 export class packet_PlayerRecord extends Packet {
-    players: Record<string, number>;
+    players: Record<string, PlayerData>;
     
-    constructor(lobby: string, players: Record<string, number>) {
+    constructor(lobby: string, players: Record<string, PlayerData>) {
         super(mk64Events.ON_PLAYER_RECORD, 'mk64mp', lobby);
         this.players = players;
+    }
+}
+
+export class packet_SelectedCharacter extends Packet {
+    character: number;
+
+    constructor(lobby: string, character: number) {
+        super(mk64Events.ON_SELECTED_CHARACTER, 'mk64mp', lobby)
+        this.character = character;
     }
 }
 
