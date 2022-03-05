@@ -1,8 +1,8 @@
 import { InjectCore } from "modloader64_api/CoreInjection";
 import { IModLoaderAPI, IPlugin } from "modloader64_api/IModLoaderAPI";
 import { ModLoaderAPIInject } from "modloader64_api/ModLoaderAPIInjector";
-import { MK64Core, mk64Events, mk64Player } from "./MK64CORE";
-import PlayerData from "./MK64CORE";
+import { MK64Core, mk64Events, mk64Player } from "./MK64Core";
+import PlayerData from "./MK64Core";
 import { ParentReference, SidedProxy, ProxySide } from "modloader64_api/SidedProxy/SidedProxy";
 import { EventHandler, EventServerJoined, EventServerLeft, EventsServer } from "modloader64_api/EventHandler";
 import { mk64mp_PlayerPacket, packet_LobbyFull, packet_PlayerRecord } from "./Packets";
@@ -53,9 +53,9 @@ export class mk64mpServer {
         new packet_LobbyFull(evt.lobby), evt.player);
         return;
     }
+    this.players[evt.player.uuid] = {index: 0, characterTableIndex: 0};
     if (this.openSlots.length === 0) {
-        //this.players[evt.player.uuid];
-        this.players[evt.player.uuid];
+        
         this.players[evt.player.uuid].index = this.playerCount++;
     } else {
         this.players[evt.player.uuid].index = this.openSlots[0];

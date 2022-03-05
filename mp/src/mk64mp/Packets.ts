@@ -1,8 +1,8 @@
 import {
     Packet
   } from 'modloader64_api/ModLoaderDefaultImpls';
-import {mk64Events, mk64Player} from "./MK64CORE";
-import PlayerData from "./MK64CORE";
+import {mk64Events, mk64Player} from "./MK64Core";
+import PlayerData from "./MK64Core";
 
 
 

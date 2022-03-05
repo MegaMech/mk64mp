@@ -1,5 +1,5 @@
 import {IPlugin, IModLoaderAPI} from 'modloader64_api/IModLoaderAPI';
-import {MK64Core, mk64Player} from './MK64CORE';
+import {MK64Core, mk64Player} from './MK64Core';
 import {InjectCore} from 'modloader64_api/CoreInjection';
 import IMemory from 'modloader64_api/IMemory';
 import { ProxySide, SidedProxy } from 'modloader64_api/SidedProxy/SidedProxy';
@@ -20,6 +20,7 @@ class mk64mp implements IPlugin {
 
     //@Preinit()
     preinit(): void {
+        this.ModLoader.logger.info("CORE: "+this.core.header);
         //this.server.setup();
     }
     @Init()

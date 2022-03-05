@@ -3,13 +3,18 @@ import { IPlugin, IModLoaderAPI } from "modloader64_api/IModLoaderAPI";
 import { ModLoaderAPIInject } from "modloader64_api/ModLoaderAPIInjector";
 import { EventHandler, PrivateEventHandler, EventsClient, bus } from "modloader64_api/EventHandler";
 import { INetwork, INetworkPlayer, LobbyData, NetworkHandler } from "modloader64_api/NetworkHandler";
-import { helperFuncs, MK64Core, mk64Events, mk64Player} from "./MK64CORE"
-import PlayerData from "./MK64CORE";
+import { helperFuncs, MK64Core, mk64Events, mk64Player} from "./MK64Core"
+import PlayerData from "./MK64Core";
 import { ParentReference, SidedProxy, ProxySide } from "modloader64_api/SidedProxy/SidedProxy";
 import { mk64mp_PlayerPacket, packet_LobbyFull, packet_PlayerRecord, packet_SelectedCharacter } from "./Packets";
 import { onTick, onViUpdate } from "modloader64_api/PluginLifecycle";
+import { bool_ref } from "modloader64_api/Sylvain/ImGui";
     
 export class mk64mpClient {
+
+    // debug
+        isDebugWindowOpen: bool_ref = [true]
+    // debug_end
 
     private localPlayer = new mk64Player();
     private pointerTable: Array<number> = [];
@@ -68,17 +73,29 @@ export class mk64mpClient {
         }
         if (this.ModLoader.emulator.rdramRead32(0x800E86A0) == 0xD && !this.alreadySet2) {
             this.alreadySet2 = true;
+            let myCharacter = this.ModLoader.emulator.rdramRead8(0x8018EDE4);
             this.ModLoader.clientSide.sendPacket(
                 new packet_SelectedCharacter (
                     this.ModLoader.clientLobby, 
-                    this.ModLoader.emulator.rdramRead8(0x8018EDE4),
+                    myCharacter,
                 )
             );
+            this.players[this.ModLoader.me.uuid].characterTableIndex = myCharacter;
         }
     }
 
     @onViUpdate()
     onViUpdate() {
+        this.ModLoader.ImGui.begin("Client "+this.players[this.ModLoader.me.uuid].index.toString()+" Debug", this.isDebugWindowOpen); {
+            //let client = this.players[this.ModLoader.me.uuid];
+            Object.entries(this.players).forEach((e, t) => {
+                this.ModLoader.ImGui.text(`index: ${this.players[e[0]].index}`)
+                this.ModLoader.ImGui.separator()
+                this.ModLoader.ImGui.text(`character: ${this.players[e[0]].characterTableIndex}`)
+                this.ModLoader.ImGui.separator()
+            });
+                //counter = this.ModLoader.emulator.rdramRead32(this.someCounterPointer)
+        } this.ModLoader.ImGui.end()
 
     }
 
@@ -88,6 +105,8 @@ export class mk64mpClient {
                 let offset = (this.players[e[0]].index + 1) * this.playerStructOffset;
                 this.ModLoader.logger.info("OFFSET: "+(offset+this.pointerTable[0]).toString(16));
                 this.ModLoader.emulator.rdramWrite16(this.pointerTable[0]+offset, 0xC010);
+            } else {
+                this.ModLoader.logger.info("Client: MY INDEX IS: "+this.players[e[0]].index.toString());
             }
         });
     }
@@ -135,8 +154,10 @@ export class mk64mpClient {
     @NetworkHandler(mk64Events.ON_SELECTED_CHARACTER)
     OnSelectedCharacter(packet: packet_SelectedCharacter) {
         this.players[packet.player.uuid].characterTableIndex = packet.character;
-        this.players[packet.player.uuid]
         this.ModLoader.emulator.rdramWrite8(0x8018EDE4+this.players[packet.player.uuid].index + 1, packet.character);
+        
+        //this.players
+        //0x0254
     }
 
     @NetworkHandler(mk64Events.ON_PLAYER_UPDATE)
