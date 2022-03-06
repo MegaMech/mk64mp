@@ -2,7 +2,10 @@
   "name": "mk64mp",
   "version": "1.0.0",
   "description": "",
-  "main": "Main.js",
+  "main": "index.js",
+  "core": [
+    "MK64Core"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -17,7 +17,7 @@
         "./build/emulator/*"
       ],
       "@mp/*": [
-        "./src/mp/*"
+        "./src/mk64mp/*"
       ]
     },
     "noImplicitAny": false
