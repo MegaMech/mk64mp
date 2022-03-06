@@ -3,8 +3,8 @@ import { IPlugin, IModLoaderAPI } from "modloader64_api/IModLoaderAPI";
 import { ModLoaderAPIInject } from "modloader64_api/ModLoaderAPIInjector";
 import { EventHandler, PrivateEventHandler, EventsClient, bus } from "modloader64_api/EventHandler";
 import { INetwork, INetworkPlayer, LobbyData, NetworkHandler } from "modloader64_api/NetworkHandler";
-import { helperFuncs, MK64Core, mk64Events, mk64Player} from "./MK64Core"
-import PlayerData from "./MK64Core";
+import { helperFuncs, MK64Core, mk64Events, mk64Player} from "MK64Core"
+import PlayerData from "MK64Core";
 import { ParentReference, SidedProxy, ProxySide } from "modloader64_api/SidedProxy/SidedProxy";
 import { mk64mp_PlayerPacket, packet_LobbyFull, packet_PlayerRecord, packet_SelectedCharacter } from "./Packets";
 import { onTick, onViUpdate } from "modloader64_api/PluginLifecycle";
@@ -42,6 +42,8 @@ export class mk64mpClient {
     setup(): void {
         setTimeout(() => {
             this.pointerTable = this.helperFunc.getPointerTable(this.pointerTable)
+            this.ModLoader.logger.info("RUNNING");
+            this.ModLoader.logger.info("table: "+this.pointerTable.toString())
             if (this.pointerTable.length === 0) {return;}
             this.beginRead = true;
             
