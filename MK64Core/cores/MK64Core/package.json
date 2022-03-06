@@ -2,7 +2,7 @@
   "name": "MK64Core",
   "version": "1.0.0",
   "description": "",
-  "main": "MK64Core.ts",
+  "main": "MK64Core.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
