@@ -24,10 +24,10 @@ export class mk64mpClient {
 
 
     private players: Record<string, PlayerData> = {};
-    private playerStructOffset = 0xDD8;
     private localUUID: string = "";
     private alreadySet: boolean = false;
     private alreadySet2: boolean = false;
+    private isHost: boolean = false;
 
     @InjectCore()
     core!: MK64Core;
@@ -42,6 +42,11 @@ export class mk64mpClient {
     setup(): void {
         setTimeout(() => {
             this.pointerTable = this.helperFunc.getPointerTable(this.pointerTable)
+            this.ModLoader.logger.info("gPlayers:");
+            this.ModLoader.logger.info(this.helperFunc.defines.gPlayer1.toString(16));
+            this.ModLoader.logger.info(this.helperFunc.defines.gPlayer2.toString(16));
+            this.ModLoader.logger.info(this.helperFunc.defines.gPlayer3.toString(16));
+            this.ModLoader.logger.info(this.helperFunc.defines.gPlayer4.toString(16));
             this.ModLoader.logger.info("RUNNING");
             this.ModLoader.logger.info(this.helperFunc.defines.gPlayer1.toString(16));
             if (this.pointerTable.length === 0) {return;}
@@ -66,7 +71,7 @@ export class mk64mpClient {
                  )
              );
          }
-        if (this.helperFunc.read(this.helperFunc.defines.D_800DC510, 16) == 3 && !this.alreadySet) {
+        if (this.helperFunc.read(this.helperFunc.defines.D_800DC510, 32) == 3 && !this.alreadySet) {
             this.alreadySet = true;
             // 800DC510
             setTimeout(() => {
@@ -83,12 +88,22 @@ export class mk64mpClient {
                 )
             );
             this.players[this.ModLoader.me.uuid].characterTableIndex = myCharacter;
+            let i = 1;
+            for (let id in this.players) {
+                if (this.ModLoader.me.uuid == id) {
+                    this.ModLoader.emulator.rdramWrite16(this.helperFunc.defines.netPlayerPositions, this.players[id].index);
+                    continue;
+                }
+                this.ModLoader.emulator.rdramWrite16(this.helperFunc.defines.netPlayerPositions + (2 * i), this.players[id].index);
+
+                i++;
+            }
         }
     }
 
     @onViUpdate()
     onViUpdate() {
-        
+        if (typeof this.players[this.ModLoader.me.uuid] == "undefined") { return;}
         this.ModLoader.ImGui.begin("Client "+this.players[this.ModLoader.me.uuid].index.toString()+" Debug", this.isDebugWindowOpen); {
             //let client = this.players[this.ModLoader.me.uuid];
             Object.entries(this.players).forEach((e, t) => {
@@ -97,20 +112,56 @@ export class mk64mpClient {
                 this.ModLoader.ImGui.text(`character: ${this.players[e[0]].characterTableIndex}`)
                 this.ModLoader.ImGui.separator()
             });
+                let str = "";
+                for (let i = 0; i < 8; i++) {
+                    str += this.helperFunc.read(this.helperFunc.defines.netPlayerPositions + (i * 2),16).toString(16)+" "
+                }
+                this.ModLoader.ImGui.text("netPlayerPos: "+ str);
+                this.ModLoader.ImGui.separator()
+                let stri = "";
+                for (let i = 0; i < 8; i++) {
+                    stri += this.helperFunc.read(this.helperFunc.defines.netCharacterSelections + (i * 2),16).toString(16)+" "
+                }
+                this.ModLoader.ImGui.text("netCharacterSel: "+ stri);
+                this.ModLoader.ImGui.separator()
                 //counter = this.ModLoader.emulator.rdramRead32(this.someCounterPointer)
         } this.ModLoader.ImGui.end()
 
     }
 
     setPlayersHuman(): void {
-        Object.entries(this.players).forEach((e, t) => {
-            if (this.ModLoader.me.uuid !== e[0]) {
-                let offset = (this.players[e[0]].index + 1) * this.playerStructOffset;
-                this.ModLoader.logger.info("OFFSET: "+(offset+this.pointerTable[0]).toString(16));
-                this.ModLoader.emulator.rdramWrite16(this.helperFunc.defines.gPlayer1+offset, 0xC010);
-            } else {
-                this.ModLoader.logger.info("Client: MY INDEX IS: "+this.players[e[0]].index.toString());
+        
+        Object.keys(this.players).forEach((id) => {
+            switch(this.players[id].index) {
+                case 0:
+                    //this.ModLoader.emulator.rdramWrite16(this.helperFunc.defines.gPlayer1, 0xC010);
+                    break;
+                case 1:
+                    this.ModLoader.emulator.rdramWrite16(this.helperFunc.defines.gPlayer2, 0xC010);
+                    this.ModLoader.logger.info(this.helperFunc.defines.gPlayer2.toString(16));
+                    break;
+                case 2:
+                    this.ModLoader.emulator.rdramWrite16(this.helperFunc.defines.gPlayer3, 0xC010);
+                    this.ModLoader.logger.info(this.helperFunc.defines.gPlayer3.toString(16));
+                    break;
+                case 3:
+                    this.ModLoader.emulator.rdramWrite16(this.helperFunc.defines.gPlayer4, 0xC010);
+                    break;
+                case 4:
+                    this.ModLoader.emulator.rdramWrite16(this.helperFunc.defines.gPlayer5, 0xC010);
+                    break;
+                case 5:
+                    this.ModLoader.emulator.rdramWrite16(this.helperFunc.defines.gPlayer6, 0xC010);
+                    break;
+                case 6:
+                    this.ModLoader.emulator.rdramWrite16(this.helperFunc.defines.gPlayer7, 0xC010);
+                    break;
+                case 7:
+                    this.ModLoader.emulator.rdramWrite16(this.helperFunc.defines.gPlayer8, 0xC010);
+                    break;
             }
+            this.ModLoader.logger.info("Set Player Index "+this.players[id].index+" to human");
+            this.ModLoader.logger.info("Client: MY INDEX IS "+this.players[id].index.toString());
         });
     }
 
@@ -151,6 +202,18 @@ export class mk64mpClient {
     @NetworkHandler(mk64Events.ON_PLAYER_RECORD)
     OnPlayerRecord(packet: packet_PlayerRecord) {
         this.players = packet.players;
+
+        Object.keys(this.players).forEach(item => {
+            if (this.ModLoader.me.uuid === item)
+            {
+                if (this.players[item].index == 0) {
+                    this.isHost = true;
+                    this.ModLoader.logger.info("ISHOST TRUE");
+                }
+            }
+        })
+
+
         //this.setPlayersHuman();
     }
 
@@ -169,7 +232,7 @@ export class mk64mpClient {
         if (this.ModLoader.me.uuid === packet.player.uuid) {
             return;
         }
-        offset = (this.players[packet.player.uuid].index + 1) * this.playerStructOffset;
+        offset = (this.players[packet.player.uuid].index + 1) * this.helperFunc.defines.playerStructSize;
         this.ModLoader.emulator.rdramWrite32(this.helperFunc.defines.gPlayer1+offset+0x14, packet.localPlayer.posX);
         this.ModLoader.emulator.rdramWrite32(this.helperFunc.defines.gPlayer1+offset+0x18, packet.localPlayer.posY);
         this.ModLoader.emulator.rdramWrite32(this.helperFunc.defines.gPlayer1+offset+0x1C, packet.localPlayer.posZ);
