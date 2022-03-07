@@ -109,7 +109,7 @@ export class helperFuncs {
            if (value == 0 || value == 0xFFFFFFFF) {break;}
            
            switch(i) {
-               case pointerNames.players:
+               case 0:
                     this.defines.gPlayer1 = value;
                     this.defines.gPlayer2 = value + this.defines.playerStructSize;
                     this.defines.gPlayer3 = value + (this.defines.playerStructSize * 2);
@@ -119,7 +119,7 @@ export class helperFuncs {
                     this.defines.gPlayer7 = value + (this.defines.playerStructSize * 6);
                     this.defines.gPlayer8 = value + (this.defines.playerStructSize * 7);
                     break;
-                case pointerNames.controllers:
+                case 1:
                     this.defines.gPlayer1 = value;
                     this.defines.gPlayer2 = value + this.defines.controllerStructSize;
                     this.defines.gPlayer3 = value + (this.defines.controllerStructSize * 2);
