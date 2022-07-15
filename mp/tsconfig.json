@@ -16,7 +16,7 @@
       "@sound/*": [
         "./build/emulator/*"
       ],
-      "@mp/*": [
+      "@mk64mp/*": [
         "./src/mk64mp/*"
       ]
     },

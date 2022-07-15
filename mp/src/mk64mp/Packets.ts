@@ -4,7 +4,13 @@ import {
 import {mk64Events, mk64Player} from "MK64Core";
 import PlayerData from "MK64Core";
 
-
+export class packet_RandomizedProperties extends Packet {
+    playerStartOrder: number[];
+    constructor(lobby: string, playerStartOrder: number[]) {
+        super(mk64Events.ON_RANDOMIZED_PROPERTIES, "mk64mp", lobby);
+        this.playerStartOrder = playerStartOrder;
+    }
+}
 
 export class mk64mp_PlayerPacket extends Packet {
     localPlayer: mk64Player;
