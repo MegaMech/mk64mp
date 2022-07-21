@@ -1,0 +1,56 @@
+8000157C -> playerStruct
+80001588 -> playerStruct
+
+80290B2C -> playerStruct
+80290B64 -> playerStruct
+
+8003D6BC -> playerStruct
+8003D6F0 -> playerStruct
+
+80028F8C
+80028F90
+
+func_80028F70 change index order
+
+
+
+
+
+func_80019DE4 call waiting camera scene?
+
+
+Decomped func_8028EF28 to functional equivallency and modified to work with mp
+
+
+
+Prevent losing the race
+
+/* 0F9888 80290278 00000000 */   nop   
+/* 0F988C 8029027C 0C024959 */  jal   func_80092564
+--> Delete both lines
+
+/* 0F9894 80290284 24190007 */  li    $t9, 7
+--> Investigate further if doesn't work right
+/* 0F9894 80290284 24190007 */  li    $t9, 4
+
+
+Skip beq
+
+/* 0F85D0 8028EFC0 30884000 */  li    $t0, 1
+/* 0F85D4 8028EFC4 110000E3 */  beqz  $t0, .L8028F354
+
+
+Replace func call with: 
+80094CB4 jal network_character_select
+
+
+Allow all players to finish the race rather than ending the race after player 1
+finishes in fourth place or below
+
+/* 0F85F8 8028EFE8 2A210004 */  slti  $at, $s1, 4
+--> Change four to seven
+/* 0F85F8 8028EFE8 2A210004 */  slti  $at, $s1, 7
+
+/* 0F8600 8028EFF0 10200003 */  beqz  $at, .L8028F000
+--> Branch if $at is greater than zero. (aka, do not call D_80150120)
+/* 0F8600 8028EFF0 10200003 */  bgtz  $at, .L8028F000
