@@ -1,17 +1,18 @@
 import { ICore, IModLoaderAPI } from 'modloader64_api/IModLoaderAPI';
 import { ModLoaderAPIInject } from 'modloader64_api/ModLoaderAPIInjector';
-//import { Defines }  from './Defines';
+
+var STOCK_GAME: boolean = false;
 
 
 export class MK64Core implements ICore {
     header: string | string[] = "NKT";
     ModLoader!: IModLoaderAPI;
     //rom_header: IRomHeader = {
-    //    name: "MARIOKART64",
-    //    country_code: "E",
-    //    revision: 0,
-    //    id: "NKT"
-    //};
+        //    name: "MARIOKART64",
+        //    country_code: "E",
+        //    revision: 0,
+        //    id: "NKT"
+        //};
     heap_start: number = -1; // 0x81000000
     heap_size: number = -1; // 0x2E00000;
     
@@ -24,46 +25,167 @@ export class MK64Core implements ICore {
 }
 
 // Note: All of these are addresses. Not values!
-export class Defines {
-    public pointerTable = 0x80700020;
-    public playerStructSize = 0xDD8;
-    public gPlayer1 = 0;
-    public gPlayer2 = 0;
-    public gPlayer3 = 0;
-    public gPlayer4 = 0;
-    public gPlayer5 = 0;
-    public gPlayer6 = 0;
-    public gPlayer7 = 0;
-    public gPlayer8 = 0;
-    
-    public controllerStructSize = 0x10;
-    public gController1 = 0;
-    public gController2 = 0;
-    public gController3 = 0;
-    public gController4 = 0;
 
-    public D_800DC510 = 0;
-    public gModeSelection = 0;
-    public gCCSelection = 0;
-    public gGlobalTimer = 0;
-    public gCharacterGridSelections = 0;
-    public gCharacterSelections = 0;
-    public gCupCourseSelection = 0;
-    public gCupSelectionByCourseId = 0;
-    public gCurrentCourseId = 0;
-    public gCupSelection = 0;
-    public gMenuSelection = 0;
-    public playerPositions = 0;
-    public characterModel = 0;
-    public netPlayerPositions = 0;
-    public netCharacterSelections = 0;
+export interface Defines {
+    pointerTable;
+    playerStructSize;
+    gPlayer1;
+    gPlayer2;
+    gPlayer3;
+    gPlayer4;
+    gPlayer5;
+    gPlayer6;
+    gPlayer7;
+    gPlayer8;
+
+    controllerStructSize;
+    gController1;
+    gController2;
+    gController3;
+    gController4;
+
+    D_800DC510;
+    gModeSelection;
+    gCCSelection;
+    gGlobalTimer;
+    gCharacterGridSelections;
+    gMainMenuSelectionDepth;
+
+    D_8018EDF3;
+    D_800E86B0;
+    gScreenModeSelection;
+    gPlayerCountSelection1;
+
+    gCharacterSelections;
+    gCupCourseSelection;
+    gCupSelectionByCourseId;
+    gCurrentCourseId;
+    gCupSelection;
+    gMenuSelection;
+    playerPositions;
+    characterModel;
+    netPlayerPositions;
+    netCharacterSelections;
+    gGamestate;
+
+
+}
+
+export enum types {
+    s8 = 0,
+    s16 = 1,
+    s32 = 2,
+    s64 = 3,
+}
+
+/**
+ * If number is null, assume is struct.
+ **/
+export type pointer = {
+    p: number; // address
+    s?: types; // size
+}
+
+//let pointerTable:pointer = {p: 0x0, s: types.s32}; 
+
+export class SymbolTable implements Defines {
+    pointerTable: pointer;
+    playerStructSize: number;
+    gPlayer1: pointer;
+    gPlayer2: pointer;
+    gPlayer3: pointer;
+    gPlayer4: pointer;
+    gPlayer5: pointer;
+    gPlayer6: pointer;
+    gPlayer7: pointer;
+    gPlayer8: pointer;
+
+    controllerStructSize: number;
+    gController1: pointer;
+    gController2: pointer;
+    gController3: pointer;
+    gController4: pointer;
+    gController5: pointer;
+    gController6: pointer;
+    gController7: pointer;
+    gController8: pointer;
+
+    D_800DC510: pointer;
+    gModeSelection: pointer;
+    gCCSelection: pointer;
+    gGlobalTimer: pointer;
+    gCharacterGridSelections: pointer;
+    gMainMenuSelectionDepth: pointer;
+
+    D_8018EDF3: pointer;
+    D_800E86B0: pointer;
+    gScreenModeSelection: pointer;
+    gPlayerCountSelection1: pointer;
+
+    gCharacterSelections: pointer;
+    gCupCourseSelection: pointer;
+    gCupSelectionByCourseId: pointer;
+    gCurrentCourseId: pointer;
+    gCupSelection: pointer;
+    gMenuSelection: pointer;
+    playerPositions: pointer;
+    characterModel: pointer;
+    netPlayerPositions: pointer;
+    netCharacterSelections: pointer;
+    gGamestate: pointer;
+
+    constructor() {
+        this.pointerTable = {p: 0x80700020, s: types.s32};
+        //this.pointerTable.s = types.s32;
+        this.playerStructSize = 0xDD8;
+        this.controllerStructSize = 0x10;
+        this.gModeSelection = {p: 0x800DC53C, s: types.s32};
+        this.gCCSelection = {p: 0x800DC548, s: types.s32};
+        this.gGlobalTimer = {p: 0x800DC54C, s: types.s32};
+        this.D_800DC510 = {p: 0x800DC510, s: types.s32};
+        this.gCharacterGridSelections = {p: 0x8018EDE4, s: types.s8};
+        this.gMainMenuSelectionDepth = {p: 0x8018EDED, s: types.s8};
+        this.gScreenModeSelection = {p: 0x800DC530, s: types.s32};
+        this.gPlayerCountSelection1 = {p: 0x800DC538, s: types.s32};
+        this.D_8018EDF3 = {p: 0x8018EDF3, s: types.s8};
+        this.D_800E86B0 = {p: 0x800E86B0, s: types.s8};
+        this.gCharacterSelections = {p: 0x800E86A8, s: types.s32};
+        this.gCupCourseSelection = {p: 0x8018EE0B, s: types.s8};
+        this.gCupSelectionByCourseId = {p: 0x800E7664, s: types.s8}; // unsigned
+        this.gCurrentCourseId = {p: 0x800DC5A0, s: types.s16};
+        this.gCupSelection = {p: 0x8018EE09, s: types.s8};
+        this.gMenuSelection = {p: 0x800E86A0, s: types.s32};
+        this.playerPositions = {p: 0x80165270, s: types.s16};
+        this.characterModel = {p: 0x80165560, s: types.s16};
+        this.netPlayerPositions = {p: 0x00000000, s: types.s16};
+        this.netCharacterSelections = {p: 0x00000000, s: types.s16};
+        this.gPlayer1 = {p: 0x800F6990};
+        this.gPlayer2 = {p: 0x800F7768};
+        this.gPlayer3 = {p: 0x800F8540};
+        this.gPlayer4 = {p: 0x800F9318};
+        this.gPlayer5 = {p: 0x800FA0F0};
+        this.gPlayer6 = {p: 0x800FAEC8};
+        this.gPlayer7 = {p: 0x800FBCA0};
+        this.gPlayer8 = {p: 0x800FCA78};
+        this.gController1 = {p: 0x800F6910};
+        this.gController2 = {p: 0x800F6920};
+        this.gController3 = {p: 0x800F6930};
+        this.gController4 = {p: 0x800F6940};
+        this.gController5 = {p: 0x800F6950};
+        this.gController6 = {p: 0x800F6960};
+        this.gController7 = {p: 0x800F6970};
+        this.gController8 = {p: 0x800F6980};
+        this.gGamestate = {p: 0x800DC50C, s: types.s32};
+    }
 }
 
 export enum mk64Events {
     ON_PLAYER_UPDATE = "onPlayerUpdate",
+    ON_CPU_UPDATE    = "onCpuUpdate",
     ON_PLAYER_RECORD = "onPlayerRecord",
     ON_LOBBY_FULL = "onLobbyFull",
     ON_SELECTED_CHARACTER = "onSelectedCharacter",
+    ON_RANDOMIZED_PROPERTIES = "onRandomizedProperties",
 }
 
 export default interface PlayerData {
@@ -81,94 +203,141 @@ export class mk64Player {
     turn: number = 0;
 }
 
+/**
+ * Technically, this should just be mk64Player.
+ * However, I needed to add an index and a new packet.
+ **/
+ export class mk64Cpu extends mk64Player {
+    index: number = 0;
+}
+
 enum pointerNames {
     players = 0,
     controllers = 1,
 }
 
 export class helperFuncs {
+    
     @ModLoaderAPIInject()
     ModLoader!: IModLoaderAPI;
     //private pointerTable;
     public coords;
-    public table_end = 0xB8000000
+    private table_end = 0xFFFFFFFF;
     public begin: boolean = false;
-    public defines: Defines = new Defines();
-    
-    //Constructor(pointerTable: Array<number>) {
-        //    this.pointerTable = pointerTable;
-   // }
-   
-   public getPointerTable(pointerTable) {
-       let ptrAddr = this.defines.pointerTable; // 0x80700020;
-       let i = 0;
-       let value;
-       //this.ModLoader.logger.info(this.ModLoader.emulator.rdramRead32(0x800DC4DC).toString(16));
-       do {
-           value = this.ModLoader.emulator.rdramRead32(ptrAddr);
-           if (value == 0 || value == 0xFFFFFFFF) {break;}
+    public syms: SymbolTable = new SymbolTable();
+
+    public isStockGame() {
+        return STOCK_GAME;
+    }
+
+    /**
+     * @param index player index.
+     **/
+    public GetPlayerPointer(index: any): pointer {
+        return this.syms[`gPlayer${index+1}`];
+    }
+
+    public initPointerTable() {
+        //if (!this.syms) { return; }
+        let ptrAddr = this.syms.pointerTable.p; // 0x80700020;
+        let pointerTable: Array<number> = [];
+        let i = 0;
+        let value: number;
+        //this.ModLoader.logger.info(this.ModLoader.emulator.rdramRead32(0x800DC4DC).toString(16));
+        do {
+        //this.ModLoader.logger.info("PTRADDR");
+        value = this.ModLoader.emulator.rdramRead32(ptrAddr);
+
+        this.ModLoader.logger.info(value.toString(16)+" | "+ptrAddr.toString(16));
+           if (value == this.table_end) {break;}
            
            switch(i) {
                case 0:
-                    this.defines.gPlayer1 = value;
-                    this.defines.gPlayer2 = value + this.defines.playerStructSize;
-                    this.defines.gPlayer3 = value + (this.defines.playerStructSize * 2);
-                    this.defines.gPlayer4 = value + (this.defines.playerStructSize * 3);
-                    this.defines.gPlayer5 = value + (this.defines.playerStructSize * 4);
-                    this.defines.gPlayer6 = value + (this.defines.playerStructSize * 5);
-                    this.defines.gPlayer7 = value + (this.defines.playerStructSize * 6);
-                    this.defines.gPlayer8 = value + (this.defines.playerStructSize * 7);
-                    break;
-                case 1:
-                    this.defines.gPlayer1 = value;
-                    this.defines.gPlayer2 = value + this.defines.controllerStructSize;
-                    this.defines.gPlayer3 = value + (this.defines.controllerStructSize * 2);
-                    this.defines.gPlayer4 = value + (this.defines.controllerStructSize * 3);
+                    this.syms.playerStructSize = this.ModLoader.emulator.rdramRead32(value);
+                    this.syms.controllerStructSize = this.ModLoader.emulator.rdramRead32(value + 0x4);
+               case 1:
+                    this.syms.gPlayer1.p = value;
+                    this.syms.gPlayer2.p = value + this.syms.playerStructSize;
+                    this.syms.gPlayer3.p = value + (this.syms.playerStructSize * 2);
+                    this.syms.gPlayer4.p = value + (this.syms.playerStructSize * 3);
+                    this.syms.gPlayer5.p = value + (this.syms.playerStructSize * 4);
+                    this.syms.gPlayer6.p = value + (this.syms.playerStructSize * 5);
+                    this.syms.gPlayer7.p = value + (this.syms.playerStructSize * 6);
+                    this.syms.gPlayer8.p = value + (this.syms.playerStructSize * 7);
                     break;
                 case 2:
-                    this.defines.D_800DC510 = value;
+                    this.syms.gController1.p = value;
+                    this.syms.gController2.p = value + this.syms.controllerStructSize;
+                    this.syms.gController3.p = value + (this.syms.controllerStructSize * 2);
+                    this.syms.gController4.p = value + (this.syms.controllerStructSize * 3);
+                    this.syms.gController5.p = value + (this.syms.controllerStructSize * 4);
+                    this.syms.gController6.p = value + (this.syms.controllerStructSize * 5);
+                    this.syms.gController7.p = value + (this.syms.controllerStructSize * 6);
+                    this.syms.gController8.p = value + (this.syms.controllerStructSize * 7);
                     break;
                 case 3:
-                    this.defines.gModeSelection = value;
+                    this.syms.D_800DC510.p = value;
+                    //console.log(this.syms.D_800DC510.p);
                     break;
                 case 4:
-                    this.defines.gCCSelection = value;
+                    this.syms.gModeSelection.p = value;
                     break;
                 case 5:
-                    this.defines.gGlobalTimer = value;
+                    this.syms.gCCSelection.p = value;
                     break;
                 case 6:
-                    this.defines.gCharacterGridSelections = value;
+                    this.syms.gGlobalTimer.p = value;
                     break;
                 case 7:
-                    this.defines.gCharacterSelections = value;
+                    this.syms.gCharacterGridSelections.p = value;
                     break;
                 case 8:
-                    this.defines.gCupCourseSelection = value;
+                    this.syms.gCharacterSelections.p = value;
                     break;
                 case 9:
-                    this.defines.gCupSelectionByCourseId = value;
+                    this.syms.gCupCourseSelection.p = value;
                     break;
                 case 10:
-                    this.defines.gCurrentCourseId = value;
+                    this.syms.gCupSelectionByCourseId.p = value;
                     break;
                 case 11:
-                    this.defines.gCupSelection = value;
+                    this.syms.gCurrentCourseId.p = value;
                     break;
                 case 12:
-                    this.defines.gMenuSelection = value;
+                    this.syms.gCupSelection.p = value;
                     break;
                 case 13:
-                    this.defines.playerPositions = value;
+                    this.syms.gMenuSelection.p = value;
                     break;
                 case 14:
-                    this.defines.characterModel = value;
+                    this.syms.playerPositions.p = value;
                     break;
                 case 15:
-                    this.defines.netPlayerPositions = value;
+                    this.syms.characterModel.p = value;
                     break;
                 case 16:
-                    this.defines.netCharacterSelections = value;
+                    this.syms.netPlayerPositions.p = value;
+                    break;
+                case 17:
+                    this.syms.netCharacterSelections.p = value;
+                    break;
+                case 18:
+                    this.syms.D_8018EDF3.p = value;
+                    break;
+                case 19:
+                    this.syms.gMainMenuSelectionDepth.p = value;
+                    break;
+                case 20:
+                    this.syms.D_800E86B0.p = value;
+                    break;
+                case 21:
+                    this.syms.gScreenModeSelection.p = value;
+                    break;
+                case 22:
+                    this.syms.gPlayerCountSelection1.p = value;
+                    break;
+                case 23:
+                    this.syms.gGamestate.p = value;
                     break;
             }
             if (i > 1) {
@@ -176,9 +345,9 @@ export class helperFuncs {
             }
             i++;
             ptrAddr += 0x4;
-        } while(value != 0xFFFFFFFF); // Limited to prevent infinite loop
+        } while(value != this.table_end); // Limited to prevent infinite loop
         if (this.verifyPointerTable(pointerTable)) {
-            return pointerTable
+            return pointerTable;
         }
         return [];
     }
@@ -187,10 +356,11 @@ export class helperFuncs {
         this.ModLoader.logger.info("Verifying pointer table");
         for (let i = 0; i < pointerTable.length; i++) {            //this.ModLoader.logger.info(this.pointerTable[i].toString());
             if (pointerTable[i] < 0x80000000 || pointerTable[i] > 0x90000000) {
-                if (0) {return false;}
+                this.ModLoader.logger.info("Failure!");
+                return false
             }
         }
-        
+        this.ModLoader.logger.info("Verified!");
         return true;
     }
 
@@ -198,17 +368,50 @@ export class helperFuncs {
     /**
      * Returns emulator read value
      * @param define from enum Defines or ptr addr
-     * @param type typecast accepted values: 8, 16, 32
+     * Must have .s set as its used to figure out symbol size.
+     * @param offset Pointer math.
      */
-    read(define: number, type: number): number {
-        if (type === 8) {
-            return this.ModLoader.emulator.rdramRead8(define);
-        } else if (type === 16) {
-            return this.ModLoader.emulator.rdramRead16(define);
-        } else if (type === 32) {
-            return this.ModLoader.emulator.rdramRead32(define);
+    public read(define: pointer, offset?: number): number {
+        let temp;
+        if (offset)
+        {
+            temp = define.p + offset;
         } else {
-            return 0;
+            temp = define.p;
         }
+
+        switch(define.s) {
+            case 0:
+                return this.ModLoader.emulator.rdramRead8(temp);
+            case 1:
+                return this.ModLoader.emulator.rdramRead16(temp);
+            case 2:
+                return this.ModLoader.emulator.rdramRead32(temp);
+            case 3:
+                return this.ModLoader.emulator.rdramRead64(temp);
+        }
+        return 0;
+    }
+    /**
+     * Shuffle an array
+     * @param array 
+     * @returns arr
+     */
+    public shuffle(array): number[] {
+        let currentIndex = array.length,  randomIndex;
+      
+        // While there remain elements to shuffle...
+        while (currentIndex != 0) {
+      
+          // Pick a remaining element...
+          randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex--;
+      
+          // And swap it with the current element.
+          [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+        }
+      
+        return array;
     }
 }

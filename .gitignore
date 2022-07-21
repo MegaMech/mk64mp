@@ -1,0 +1,9 @@
+build/*
+node_modules/*
+MK64Core/build/*
+MK64Core/node_modules/*
+mp/build/*
+mp/node_modules/*
+
+mk64mp/MK64Core/node_modules/*
+mk64mp/mp/node_modules/*

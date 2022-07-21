@@ -1,7 +1,7 @@
 import {
     Packet
   } from 'modloader64_api/ModLoaderDefaultImpls';
-import {mk64Events, mk64Player} from "MK64Core";
+import {mk64Cpu, mk64Events, mk64Player} from "MK64Core";
 import PlayerData from "MK64Core";
 
 export class packet_RandomizedProperties extends Packet {
@@ -19,6 +19,16 @@ export class mk64mp_PlayerPacket extends Packet {
     constructor(lobby: string, localPlayer: mk64Player) {
         super(mk64Events.ON_PLAYER_UPDATE, 'mk64mp', lobby, true);
         this.localPlayer = localPlayer;
+    }
+}
+
+export class mk64mp_CpuPacket extends Packet {
+    CPU: mk64Cpu;
+    foward = true;
+    
+    constructor(lobby: string, CPU: mk64Cpu) {
+        super(mk64Events.ON_CPU_UPDATE, 'mk64mp', lobby, true);
+        this.CPU = CPU;
     }
 }
 

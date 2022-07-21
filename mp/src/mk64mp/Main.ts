@@ -24,10 +24,6 @@ class mk64mp implements IPlugin {
     }
     @Init()
     init(): void {
-        this.ModLoader.logger.info("FSIKFGJFGJSDFGJDFDLGJKJKLFDGKLFGJDLFJKDG.");
-        this.ModLoader.logger.info("FSIKFGJFGJSDFGJDFDLGJKJKLFDGKLFGJDLFJKDG.");
-        this.ModLoader.logger.info("FSIKFGJFGJSDFGJDFDLGJKJKLFDGKLFGJDLFJKDG.");
-        this.ModLoader.logger.info("FSIKFGJFGJSDFGJDFDLGJKJKLFDGKLFGJDLFJKDG.");
         this.ModLoader.logger.info("mk64mp initialized.");
     }
     postinit(): void {
